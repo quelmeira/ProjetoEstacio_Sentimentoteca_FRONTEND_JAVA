@@ -1,0 +1,48 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Pensamento } from './pensamento';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PensamentoService {
+  private readonly API = 'http://localhost:8080/api/pensamentos'; // URL do backend
+
+  constructor(private http: HttpClient) { }
+
+  listar(pagina: number, filtro: string, favoritos: boolean): Observable<Pensamento[]> {
+    const itensPorPagina = 6;
+    let params = new HttpParams()
+      .set("page", pagina.toString())
+      .set("size", itensPorPagina.toString());
+
+    if (filtro.trim().length > 2) {
+      params = params.set("q", filtro);
+    }
+    if (favoritos) {
+      params = params.set("favorito", 'true');
+    }
+
+    return this.http.get<Pensamento[]>(this.API, { params });
+  }
+
+  criar(pensamento: Pensamento): Observable<Pensamento> {
+    return this.http.post<Pensamento>(this.API, pensamento);
+  }
+
+  editar(pensamento: Pensamento): Observable<Pensamento> {
+    const url = `${this.API}/${pensamento.id}`;
+    return this.http.put<Pensamento>(url, pensamento);
+  }
+
+  excluir(id: number): Observable<void> {
+    const url = `${this.API}/${id}`;
+    return this.http.delete<void>(url);
+  }
+
+  buscarPorId(id: number): Observable<Pensamento> {
+    const url = `${this.API}/${id}`;
+    return this.http.get<Pensamento>(url);
+  }
+}
